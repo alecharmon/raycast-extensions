@@ -91,10 +91,6 @@ function getUiRuntime(): UiRuntime {
   return uiRuntime;
 }
 
-function debugLog(event: string, details: Record<string, unknown>) {
-  console.log(`[applepw-raycast] ${event}`, JSON.stringify(details));
-}
-
 function mapPasswordEntries(entries: ApplePwPasswordEntry[]) {
   return entries.map((entry) => ({
     domain: entry.domain,
@@ -303,39 +299,15 @@ export function createPasswordSearchWorkflow(options: PasswordSearchWorkflowOpti
 
   async function runPassword(account: AccountRecord): Promise<PasswordSearchOutcome> {
     const requestId = ++activeRequestId;
-    debugLog("workflow.fetchPassword.start", {
-      requestId,
-      domain: account.domain,
-      username: account.username,
-      hasOtp: account.hasOtp,
-    });
     const result = await applePw.getPassword(account.domain, account.username);
     if (result.kind === "auth-required") {
       const action = { kind: "password", account } as PendingAction;
       setPendingAction(requestId, action);
-      debugLog("workflow.fetchPassword.auth_required", {
-        requestId,
-        domain: account.domain,
-        username: account.username,
-      });
       return outcomeFromAuthRequired(result.prompt, action);
     }
-
-    debugLog("workflow.fetchPassword.result", {
-      requestId,
-      domain: account.domain,
-      username: account.username,
-      resultCount: result.payload.length,
-    });
     clearPendingAction(requestId);
     await repository.markAccountUsed(account.domain, account.username);
     const value = selectPasswordValue(result);
-    debugLog("workflow.fetchPassword.value_selected", {
-      requestId,
-      domain: account.domain,
-      username: account.username,
-      valueLength: value.length,
-    });
     return {
       kind: "secret",
       action: "password",
@@ -405,29 +377,13 @@ export function createPasswordSearchWorkflow(options: PasswordSearchWorkflowOpti
 
 async function copySecretAndNotify(outcome: SecretOutcome): Promise<void> {
   const ui = getUiRuntime();
-  debugLog("ui.copySecret.start", {
-    action: outcome.action,
-    domain: outcome.account.domain,
-    username: outcome.account.username,
-    valueLength: outcome.value.length,
-  });
   await ui.Clipboard.copy(outcome.value, { concealed: true });
   await ui.showHUD(outcome.action === "password" ? "Password copied" : "2FA code copied");
-  debugLog("ui.copySecret.success", {
-    action: outcome.action,
-    domain: outcome.account.domain,
-    username: outcome.account.username,
-  });
 }
 
 async function presentError(error: unknown): Promise<void> {
   const ui = getUiRuntime();
   const message = error instanceof Error ? error.message : "Unknown error";
-  debugLog("ui.error", {
-    message,
-    name: error instanceof Error ? error.name : undefined,
-    stack: error instanceof Error ? error.stack : undefined,
-  });
   await ui.showToast({
     style: ui.Toast.Style.Failure,
     title: "Apple Passwords",

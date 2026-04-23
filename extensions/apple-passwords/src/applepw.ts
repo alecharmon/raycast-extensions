@@ -139,8 +139,8 @@ export function resolveApplePwBinaryCandidates(options: ApplePwBinaryResolutionO
   return ["applepw", ...COMMON_BINARY_PATHS, options.repoFallbackPath ?? DEFAULT_REPO_BINARY_PATH];
 }
 
-function debugLog(event: string, details: Record<string, unknown>) {
-  console.log(`[applepw-raycast] ${event}`, JSON.stringify(details));
+export function sanitizeLoggedArgs(args: string[]): string[] {
+  return args.map((arg, index) => (args[index - 1] === "--pin" ? "[REDACTED]" : arg));
 }
 
 function createDefaultRunner(commandCandidates: string[]): ApplePwRunner {
@@ -356,14 +356,7 @@ export function createApplePwClient(options: ApplePwClientOptions = {}): ApplePw
   const binaryPath = binaryCandidates[0];
 
   async function execute<T extends object>(args: string[]): Promise<ApplePwCommandOutcome<T>> {
-    debugLog("applepw.execute.start", { binaryPath, args });
     const result = await runner(binaryPath, args);
-    debugLog("applepw.execute.result", {
-      binaryPath,
-      args,
-      exitCode: result.exitCode,
-      signal: result.signal,
-    });
     return buildCommandOutcome<T>(result, binaryPath, args);
   }
 
@@ -416,16 +409,8 @@ export function createApplePwClient(options: ApplePwClientOptions = {}): ApplePw
   async function getPassword(domain: string, username: string): Promise<ApplePwCommandOutcome<ApplePwPasswordEntry[]>> {
     const response = await execute<ApplePwJsonPayload<ApplePwPasswordEntry>>(buildPasswordArgs(domain, username));
     if (response.kind === "auth-required") {
-      debugLog("applepw.getPassword.auth_required", { domain, username });
       return response;
     }
-
-    debugLog("applepw.getPassword.success", {
-      domain,
-      username,
-      resultCount: normalizeResults(response.payload?.results).length,
-      payload: response.payload,
-    });
     return {
       kind: "success",
       payload: normalizeResults(response.payload?.results),
