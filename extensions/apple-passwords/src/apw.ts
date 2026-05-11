@@ -337,7 +337,12 @@ export function createPasswordSearchWorkflow(options: PasswordSearchWorkflowOpti
 
   async function submitPin(pin: string): Promise<PasswordSearchOutcome> {
     if (!pendingAction) {
-      throw new Error("No pending authentication action");
+      await applePw.authenticate(pin);
+      return {
+        kind: "results",
+        query: "",
+        rows: [],
+      };
     }
 
     await applePw.authenticate(pin);

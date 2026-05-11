@@ -428,6 +428,30 @@ test("retries the original search after pin auth succeeds", async () => {
   assert.deepEqual(calls, ["list", "auth:123456", "list"]);
 });
 
+test("authenticates startup pin submissions without a pending action", async () => {
+  const calls: string[] = [];
+  const workflow = createPasswordSearchWorkflow({
+    applePw: makeApplePwClient({
+      authenticate: async (pin: string) => {
+        calls.push(`auth:${pin}`);
+        return { status: 0 };
+      },
+    }),
+    repository: makeRepository({
+      upsertDiscoveredAccounts: async () => undefined,
+      markAccountUsed: async () => undefined,
+      searchAccounts: async () => [],
+    }),
+  });
+
+  const result = await workflow.submitPin("654321");
+
+  assert.equal(result.kind, "results");
+  assert.equal(result.query, "");
+  assert.deepEqual(result.rows, []);
+  assert.deepEqual(calls, ["auth:654321"]);
+});
+
 test("fetches password and otp secrets for the selected account", async () => {
   const used: string[] = [];
   const account = {
