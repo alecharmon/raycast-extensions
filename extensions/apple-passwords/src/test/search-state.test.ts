@@ -578,7 +578,7 @@ test("trims and forwards csv import submissions", async () => {
   assert.deepEqual(submissions, ["/Users/test/Passwords.csv"]);
 });
 
-test("uses a plain code field for auth entry", () => {
+test("uses a password field for auth entry so the code is not visible while typing", () => {
   const props = createAuthPromptFieldProps();
 
   assert.deepEqual(props, {

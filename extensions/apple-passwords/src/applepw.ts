@@ -49,7 +49,7 @@ export class ApplePwCliError extends Error {
     super(message);
     this.name = "ApplePwCliError";
     this.command = options.command;
-    this.args = options.args;
+    this.args = sanitizeLoggedArgs([...options.args]);
     this.exitCode = options.exitCode;
     this.stdout = options.stdout;
     this.stderr = options.stderr;

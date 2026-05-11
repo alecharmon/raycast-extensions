@@ -198,6 +198,20 @@ test("sanitizeLoggedArgs redacts pin values", () => {
   ]);
 });
 
+test("ApplePwCliError stores sanitized args so PIN is not retained on the error object", () => {
+  const rawArgs = ["auth", "response", "--pin", "secret-pin", "--salt", "salt"];
+  const error = new ApplePwCliError({
+    command: "/opt/homebrew/bin/applepw",
+    args: rawArgs,
+    exitCode: 1,
+    stdout: "",
+    stderr: "failed",
+  });
+
+  assert.deepEqual(error.args, ["auth", "response", "--pin", "[REDACTED]", "--salt", "salt"]);
+  assert.equal(rawArgs[3], "secret-pin");
+});
+
 test("authenticate runs request and response", async () => {
   const calls: Array<{ command: string; args: string[] }> = [];
   const client = createApplePwClient({

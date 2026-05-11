@@ -439,7 +439,7 @@ export function AuthPromptForm({ prompt, onSubmit }: { prompt: string; onSubmit:
       actions: h(ui.ActionPanel, null, h(ui.Action.SubmitForm, createAuthPromptSubmitActionProps(onSubmit))),
     },
     h(ui.Form.Description, createAuthPromptDescriptionProps(prompt)),
-    h(ui.Form.TextField, createAuthPromptFieldProps()),
+    h(ui.Form.PasswordField, createAuthPromptFieldProps()),
   );
 }
 

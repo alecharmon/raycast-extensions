@@ -65,4 +65,3 @@ Passwords and one-time codes are never written to disk by the extension.
 
 - `Search Passwords`: Search Apple Passwords and copy passwords or one-time codes.
 - `Clear Password Cache`: Delete the local password cache file.
-
