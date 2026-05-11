@@ -651,7 +651,6 @@ export default function Command() {
     if (!trimmedQuery) {
       requestIdRef.current += 1;
       setRows([]);
-      setAuthPrompt(null);
       setIsLoading(false);
       return;
     }
